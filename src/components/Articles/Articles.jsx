@@ -61,7 +61,7 @@ function ContactForm() {
 
   return (
     <>
-      <div className="formcontainer">
+      {/* <div className="formcontainer">
         <div
           style={{ background: "#F2EFE7" }}
           className="contact-form p-6 rounded-lg shadow-md"
@@ -134,7 +134,7 @@ function ContactForm() {
             </div>
           </form>
         </div>
-      </div>
+      </div> */}
 
       <FloatingWhatsApp
         phoneNumber="962785956180"
@@ -225,16 +225,15 @@ function Example() {
       </h1>
 
       <div className="bg-gray-100 py-10">
-        <div className="max-w-8xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-6 gap-8">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {products.map((product) => (
               <a
                 key={product.id}
                 href={product.href}
                 className="relative group block rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 bg-white"
               >
-                <div className="overflow-hidden rounded-t-lg"> 
-                  
+                <div className="overflow-hidden rounded-t-lg">
                   <img
                     src={product.imageSrc}
                     alt={product.imageAlt}
@@ -243,7 +242,10 @@ function Example() {
                 </div>
 
                 <div className="p-5">
-                  <h2 style={{color:"black"}} className="text-lg font-semibold text-gray-900 group-hover:text-blue-600">
+                  <h2
+                    style={{ color: "black" }}
+                    className="text-lg font-semibold text-gray-900 group-hover:text-blue-600"
+                  >
                     {product.name}
                   </h2>
                 </div>

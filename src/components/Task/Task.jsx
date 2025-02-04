@@ -5,6 +5,12 @@ import { app, firebaseConfig } from '../../firebaseConfig';
 import { auth, onAuthStateChanged } from '../Register/firebaseConfig';
 import Footer from "../Footer/Footer";
 
+
+import Swal from 'sweetalert2'
+
+// or via CommonJS
+// const Swal = require('sweetalert2')
+
 const Task = () => {
   const [columns, setColumns] = useState({
     todo: { name: "📝 To Do", color: "bg-blue-100", tasks: [] },
@@ -97,62 +103,152 @@ const Task = () => {
     fetchTasks();
   }, [userId]);
 
+  // const handleSaveTask = async () => {
+  //   if (newTask.title.trim() === "") return;
+
+  //   try {
+  //     if (isEditing) {
+  //       await axios.put(`${firebaseConfig.databaseURL}/tasks/${editingTaskId}.json`, newTask);
+
+  //       // Update state after editing:
+  //       setColumns(prevColumns => {
+  //         const updatedColumns = { ...prevColumns };
+  //         for (const status in updatedColumns) {
+  //           updatedColumns[status].tasks = updatedColumns[status].tasks.map(task =>
+  //             task.id === editingTaskId ? { ...newTask, id: editingTaskId } : task
+  //           );
+  //         }
+  //         return updatedColumns;
+  //       });
+
+  //     } else {
+  //       const taskWithDeletedField = { ...newTask, isDeleted: false };
+  //       const response = await axios.post(`${firebaseConfig.databaseURL}/tasks.json`, taskWithDeletedField);
+  //       const taskId = response.data.name;
+
+
+  //       setColumns(prevColumns => ({
+  //         ...prevColumns,
+  //         todo: { ...prevColumns.todo, tasks: [...prevColumns.todo.tasks, { ...taskWithDeletedField, id: taskId }] }
+  //       }));
+  //     }
+
+  //     setShowModal(false);
+  //     setNewTask({ title: "", description: "", priority: "Low", status: "todo", deadline: "", isDeleted: false, userId: "" });
+  //   } catch (error) {
+  //     console.error("Error saving task:", error);
+  //   }
+  // };
+  // const handleDeleteTask = async (columnId, taskId) => {
+
+
+  //   try {
+
+  //     await axios.patch(`${firebaseConfig.databaseURL}/tasks/${taskId}.json`, {
+  //       isDeleted: true,
+  //     });
+
+  //     //عشان نشيل المهمة من العامود بعد الحذف
+  //     setColumns((prevColumns) => ({
+  //       ...prevColumns,
+  //       [columnId]: {
+  //         ...prevColumns[columnId],
+  //         tasks: prevColumns[columnId].tasks.filter((task) => task.id !== taskId)
+  //       }
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error soft deleting task:", error);
+  //   }
+  // };
+
   const handleSaveTask = async () => {
     if (newTask.title.trim() === "") return;
 
-    try {
-      if (isEditing) {
-        await axios.put(`${firebaseConfig.databaseURL}/tasks/${editingTaskId}.json`, newTask);
+    Swal.fire({
+      title: isEditing ? 'Are you sure you want to update this task?' : 'Are you sure you want to create this task?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: isEditing ? 'Yes, update it!' : 'Yes, create it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          if (isEditing) {
+            await axios.put(`${firebaseConfig.databaseURL}/tasks/${editingTaskId}.json`, newTask);
 
-        // Update state after editing:
-        setColumns(prevColumns => {
-          const updatedColumns = { ...prevColumns };
-          for (const status in updatedColumns) {
-            updatedColumns[status].tasks = updatedColumns[status].tasks.map(task =>
-              task.id === editingTaskId ? { ...newTask, id: editingTaskId } : task
-            );
+            setColumns(prevColumns => {
+              const updatedColumns = { ...prevColumns };
+              for (const status in updatedColumns) {
+                updatedColumns[status].tasks = updatedColumns[status].tasks.map(task =>
+                  task.id === editingTaskId ? { ...newTask, id: editingTaskId } : task
+                );
+              }
+              return updatedColumns;
+            });
+          } else {
+            const taskWithDeletedField = { ...newTask, isDeleted: false };
+            const response = await axios.post(`${firebaseConfig.databaseURL}/tasks.json`, taskWithDeletedField);
+            const taskId = response.data.name;
+
+            setColumns(prevColumns => ({
+              ...prevColumns,
+              todo: { ...prevColumns.todo, tasks: [...prevColumns.todo.tasks, { ...taskWithDeletedField, id: taskId }] }
+            }));
           }
-          return updatedColumns;
-        });
 
-      } else {
-        const taskWithDeletedField = { ...newTask, isDeleted: false };
-        const response = await axios.post(`${firebaseConfig.databaseURL}/tasks.json`, taskWithDeletedField);
-        const taskId = response.data.name;
+          setShowModal(false);
+          setNewTask({ title: "", description: "", priority: "Low", status: "todo", deadline: "", isDeleted: false, userId: "" });
 
-
-        setColumns(prevColumns => ({
-          ...prevColumns,
-          todo: { ...prevColumns.todo, tasks: [...prevColumns.todo.tasks, { ...taskWithDeletedField, id: taskId }] }
-        }));
-      }
-
-      setShowModal(false);
-      setNewTask({ title: "", description: "", priority: "Low", status: "todo", deadline: "", isDeleted: false, userId: "" });
-    } catch (error) {
-      console.error("Error saving task:", error);
-    }
-  };
-  const handleDeleteTask = async (columnId, taskId) => {
-    try {
-
-      await axios.patch(`${firebaseConfig.databaseURL}/tasks/${taskId}.json`, {
-        isDeleted: true,
-      });
-
-      //عشان نشيل المهمة من العامود بعد الحذف
-      setColumns((prevColumns) => ({
-        ...prevColumns,
-        [columnId]: {
-          ...prevColumns[columnId],
-          tasks: prevColumns[columnId].tasks.filter((task) => task.id !== taskId)
+          Swal.fire(
+            'Success!',
+            isEditing ? 'Task has been updated.' : 'Task has been created.',
+            'success'
+          );
+        } catch (error) {
+          console.error("Error saving task:", error);
         }
-      }));
-    } catch (error) {
-      console.error("Error soft deleting task:", error);
-    }
+      }
+    });
   };
 
+
+
+  const handleDeleteTask = async (columnId, taskId) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.patch(`${firebaseConfig.databaseURL}/tasks/${taskId}.json`, {
+            isDeleted: true,
+          });
+
+          setColumns((prevColumns) => ({
+            ...prevColumns,
+            [columnId]: {
+              ...prevColumns[columnId],
+              tasks: prevColumns[columnId].tasks.filter((task) => task.id !== taskId)
+            }
+          }));
+
+          Swal.fire(
+            'Deleted!',
+            'Your task has been deleted.',
+            'success'
+          );
+        } catch (error) {
+          console.error("Error soft deleting task:", error);
+        }
+      }
+    });
+  };
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
@@ -227,41 +323,37 @@ const Task = () => {
           <div className="flex space-x-2 mb-6">
             <button
               onClick={() => setFilterPriority("All")}
-              className={`px-4 py-2 rounded-lg ${
-                filterPriority === "All"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200"
-              }`}
+              className={`px-4 py-2 rounded-lg ${filterPriority === "All"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setFilterPriority("Low")}
-              className={`px-4 py-2 rounded-lg ${
-                filterPriority === "Low"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200"
-              }`}
+              className={`px-4 py-2 rounded-lg ${filterPriority === "Low"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+                }`}
             >
               Low
             </button>
             <button
               onClick={() => setFilterPriority("Medium")}
-              className={`px-4 py-2 rounded-lg ${
-                filterPriority === "Medium"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200"
-              }`}
+              className={`px-4 py-2 rounded-lg ${filterPriority === "Medium"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+                }`}
             >
               Medium
             </button>
             <button
               onClick={() => setFilterPriority("High")}
-              className={`px-4 py-2 rounded-lg ${
-                filterPriority === "High"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200"
-              }`}
+              className={`px-4 py-2 rounded-lg ${filterPriority === "High"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+                }`}
             >
               High
             </button>
@@ -327,6 +419,7 @@ const Task = () => {
 
                 <input
                   type="date"
+                  min="2025-02-03" max="2025-12-31"
                   className="w-full border p-2 mt-3 rounded-lg"
                   value={newTask.deadline}
                   onChange={(e) =>
@@ -447,8 +540,8 @@ const Task = () => {
                             task.priority === "Low"
                               ? "text-blue-600 font-semibold"
                               : task.priority === "Medium"
-                              ? "text-orange-600 font-semibold"
-                              : "text-red-600 font-semibold"
+                                ? "text-orange-600 font-semibold"
+                                : "text-red-600 font-semibold"
                           }
                         >
                           {task.priority}

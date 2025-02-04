@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Navbar } from '../exports';
+import { useState, useEffect } from "react";
+import { Navbar } from "../exports";
 import { getDatabase, ref, onValue } from "firebase/database";
-import NewTask from './NewTask';
+import NewTask from "./NewTask";
 
 function Dashboard() {
   const db = getDatabase();
@@ -75,7 +75,9 @@ function Dashboard() {
           defaultValue=""
           className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
         >
-          <option value="" disabled>Select a user</option>
+          <option value="" disabled>
+            Select a user
+          </option>
           {users.map((user) => (
             <option key={user.id} value={user.id}>
               {user.username}
@@ -86,13 +88,18 @@ function Dashboard() {
 
       {selectedUser && (
         <div className="mt-4 p-3 bg-gray-100 rounded-md shadow">
-          <p><strong className="text-gray-700">Email:</strong> {selectedUser.email}</p>
-          <p><strong className="text-gray-700">User Type:</strong> {selectedUser.userType}</p>
+          <p>
+            <strong className="text-gray-700">Email:</strong>{" "}
+            {selectedUser.email}
+          </p>
+          <p>
+            <strong className="text-gray-700">User Type:</strong>{" "}
+            {selectedUser.userType}
+          </p>
 
           <NewTask userId={selectedUser.id} />
         </div>
       )}
-
 
       {tasks.length > 0 && (
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -114,7 +121,9 @@ function Dashboard() {
 
           {/* Doing Tasks */}
           <div className="p-4 bg-yellow-100 shadow rounded-lg">
-            <h3 className="text-lg font-semibold mb-2 text-yellow-700">Doing</h3>
+            <h3 className="text-lg font-semibold mb-2 text-yellow-700">
+              Doing
+            </h3>
             {doingTasks.length > 0 ? (
               <ul>
                 {doingTasks.map((task) => (
@@ -146,7 +155,9 @@ function Dashboard() {
 
           {/* High Priority Tasks */}
           <div className="p-4 bg-red-100 shadow rounded-lg">
-            <h3 className="text-lg font-semibold mb-2 text-red-700">High Priority</h3>
+            <h3 className="text-lg font-semibold mb-2 text-red-700">
+              High Priority
+            </h3>
             {highPriorityTasks.length > 0 ? (
               <ul>
                 {highPriorityTasks.map((task) => (

@@ -1,48 +1,59 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auth, signInWithEmailAndPassword, database } from '../Register/firebaseConfig';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { ref, get, set } from 'firebase/database';
-import loginImage from './login.png';
-import './Login.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  auth,
+  signInWithEmailAndPassword,
+  database,
+} from "../Register/firebaseConfig";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { ref, get, set } from "firebase/database";
+import loginImage from "./login.png";
+import "./Login.css";
 
 function Login() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
+    email: "",
+    password: "",
+    rememberMe: false,
   });
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
       const user = userCredential.user;
-      
-      const userData = {
-        username: user.displayName || 'User',
-        email: user.email,
-        uid: user.uid,
-      };
-      
-      if (formData.rememberMe) {
-        localStorage.setItem('user', JSON.stringify(userData));
+      const userRef = ref(database, `users/${user.uid}`);
+      const snapshot = await get(userRef);
+
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        const formattedUserData = {
+          username: userData.username || "User",
+          email: user.email,
+          uid: user.uid,
+          userType: userData.userType || "user",
+        };
+
+        sessionStorage.setItem("user", JSON.stringify(formattedUserData));
+        navigate("/");
       } else {
-        sessionStorage.setItem('user', JSON.stringify(userData));
+        setError("User data not found.");
       }
-      
-      navigate('/');
     } catch (error) {
       setError("Invalid email or password.");
       console.error("Error during login:", error);
@@ -54,26 +65,31 @@ function Login() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
-      const userRef = ref(database, `users/${user.uid}/${user.uid}`);
+      const userRef = ref(database, `users/${user.uid}`);
       const snapshot = await get(userRef);
-      
+      let userData;
+
       if (!snapshot.exists()) {
-        await set(userRef, {
-          username: user.displayName || 'User',
+        userData = {
+          username: user.displayName || "User",
           email: user.email,
           uid: user.uid,
-        });
+          userType: "user",
+        };
+        await set(userRef, userData);
+      } else {
+        userData = snapshot.val();
       }
-      
-      const userData = {
-        username: user.displayName || 'User',
+
+      const formattedUserData = {
+        username: userData.username || "User",
         email: user.email,
         uid: user.uid,
+        userType: userData.userType || "user",
       };
-      
-      sessionStorage.setItem("userData", JSON.stringify(userData));
-      navigate('/');
+
+      sessionStorage.setItem("user", JSON.stringify(formattedUserData));
+      navigate("/");
     } catch (error) {
       console.error("Google Sign-In Error:", error);
       setError("Failed to sign in with Google.");
@@ -86,7 +102,7 @@ function Login() {
         <h2>Sign In</h2>
         <form onSubmit={handleSubmit}>
           <div>
-            <label>Enter Username:</label>
+            <label>Enter Email:</label>
             <input
               type="email"
               name="email"
@@ -119,7 +135,7 @@ function Login() {
           {error && <p className="error-message">{error}</p>}
           <button type="submit">Login</button>
         </form>
-        
+
         <div className="google-signin-container">
           <span>Or sign in with</span>
           <div className="google-signin" onClick={handleGoogleSignIn}>
@@ -131,7 +147,12 @@ function Login() {
             />
           </div>
         </div>
-        <p>Don't have an account? <a className='signUp' href="/register">Create One</a></p>
+        <p>
+          Don't have an account?{" "}
+          <a className="signUp" href="/register">
+            Create One
+          </a>
+        </p>
       </div>
       <div className="image-container">
         <img src={loginImage} alt="Login" />

@@ -18,9 +18,9 @@ function Footer() {
           <div class="lg:flex lg:items-center">
             <a href="javascript:void(0)">
               <img
-                src="src/assets/2025-02-02_224830.png"
-                alt="logo"
-                class="w-48"
+                style={{ width: "70px", height: "70px" }}
+                src="src/assets/task_logo-removebg-preview.png"
+                alt=""
               />
             </a>
           </div>

@@ -42,27 +42,37 @@ function Eisenhower() {
   };
 
   // 🎤 تسجيل الصوت
-  const startListening = () => {
-    if (!("webkitSpeechRecognition" in window)) {
-      alert("متصفحك لا يدعم ميزة التعرف على الصوت!");
-      return;
-    }
+const startListening = () => {
+  if (!("webkitSpeechRecognition" in window)) {
+    alert("Your browser does not support speech recognition!");
+    return;
+  }
 
-    const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = selectedLanguage; // استخدام اللغة المختارة من القائمة
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+  const recognition = new window.webkitSpeechRecognition();
+  recognition.lang = selectedLanguage;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-
-    recognition.onresult = (event) => {
-      const speechToText = event.results[0][0].transcript;
-      setTask(speechToText);
-    };
-
-    recognition.start();
+  recognition.onstart = () => setIsListening(true);
+  recognition.onend = () => {
+    setIsListening(false);
+    console.log("Speech recognition stopped.");
   };
+
+  recognition.onerror = (event) => {
+    console.error("Speech Recognition Error: ", event.error);
+    alert("Error: " + event.error);
+  };
+
+  recognition.onresult = (event) => {
+    const speechToText = event.results[0][0].transcript;
+    setTask(speechToText);
+    console.log("Recognized text:", speechToText);
+  };
+
+  recognition.start();
+};
+
   // screenshot
   const captureScreenshot = () => {
     const taskSection = document.getElementById("quadrantt");
@@ -275,10 +285,10 @@ function Eisenhower() {
         statusMessage="Online"
         chatMessage="Hello! How can we assist you?"
         allowClickAway={true}
-        darkMode={true}
+        darkMode={false}
         notification={true}
         notificationSound={true}
-        messageDelay={1}
+        messageDelay={2}
       />
       
     </div>
